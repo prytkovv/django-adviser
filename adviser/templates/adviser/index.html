@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+
+{% block title %}Home{% endblock %}
+
+{% block style %}
+    {% load static %}
+    {% load bootstrap4 %}
+    <link rel="stylesheet" type="text/css" href="{% static 'ex/style.css' %}">
+{% endblock %}
+{% block content %}
+    {% include "nav.html" %}
+    <div class="content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-info">
+                    <a class="close" href="#" data-dismiss="alert">×</a>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% if tips %}
+            <h1 class="main-title">Published tips</h1>
+                {% for tip in tips %}
+                    {{ tip.id }}
+                    <table class="table">
+                      <thead class="thead-light">
+                            <tr>
+                                <th class="left-side">
+                                    {{ tip.author }}({{ tip.author.profile.reputation }})
+                                </th>
+                                <th class="right-side"> {{ tip.publication_date }} </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="left-side"> 
+                                    {% if tip.author.is_superuser %}
+                                        <p style="color:#cc0000"><strong>admin</strong></p>
+                                    {% elif tip.author.is_staff %}
+                                        <p style="color:#9900cc"><strong>staff</strong></p>
+                                    {% else %}
+                                        <p style="color:#007acc"><strong>user</strong></p>
+                                    {% endif %}
+                                    <a class="btn btn-success btn-sm custom-btn-size" href="{% url 'upvote' tip.id %}">
+                                    +</a>
+                                    {{ tip.score }}
+                                    <a class="btn btn-danger btn-sm custom-btn-size" href="{% url 'downvote' tip.id %}">
+                                        -</a>
+                                </td>
+                                <td> {{ tip.content }} </td>
+                            </tr>
+                            {% if user == tip.author or user.profile.reputation >= 30 %}
+                                <tr>
+                                    <td class="right-side" colspan="2">
+                                            <a href="{% url 'edit' tip.id %}">edit</a>
+                                            <a href="{% url 'delete' tip.id %}">delete</a>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                    <br>
+                {% endfor %}
+        {% else %}
+            <p><strong>No data available</strong></p>
+        {% endif %}
+        <div class="creation-form">
+        {% if user.is_authenticated %}
+            <h1 class="main-title">Create a new tip</h1>
+            <form method="POST">
+                {% csrf_token %}
+                {% bootstrap_form form layout='inline' %}
+                <input class="btn btn-primary" type="submit" value="Post your tip">
+            </form>
+        {% endif %}
+        </div>
+    </div>
+{% endblock %}
